@@ -1,0 +1,1 @@
+ALTER TABLE post DROP COLUMN reply_to;
