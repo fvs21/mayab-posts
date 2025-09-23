@@ -5,7 +5,7 @@ set -euo pipefail
 source .env
 
 DB_URL="postgres://$PSQL_USER:$PSQL_PASSWORD@localhost:5432/$PSQL_DB?sslmode=disable"
-MIG_DIR="db/migrations"
+MIG_DIR="app/db/migrations"
 
 psql "$DB_URL" -c "
     CREATE TABLE IF NOT EXISTS schema_migrations (
