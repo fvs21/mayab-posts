@@ -1,13 +1,16 @@
-from flask import Flask
+from flask import Flask, g
 from app.api import register_blueprints
-from app.config import initialize_db
 
 def create_app():
     app = Flask(__name__)
 
-    with app.app_context():
-        initialize_db()
-
     register_blueprints(app)
+
+    @app.teardown_appcontext
+    def close_db(error):
+        db = g.pop('db', None)
+
+        if db is not None:
+            db.close()
 
     return app
