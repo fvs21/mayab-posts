@@ -1,12 +1,12 @@
 '''
 - Update bio 🥵
-- Update pfp
+- Update pfp 🥵
 - Update banner
 - Follow user
 - Unfollow user
 '''
 from flask import Blueprint, jsonify, request
-from app.user.service import update_user_bio
+from app.user.service import *
 from flask_jwt_extended import jwt_required, get_jwt_identity
 user_bp = Blueprint("user", __name__, url_prefix="/user") #Se crea el blueprint para poder usar con el prefix de user
 
@@ -26,3 +26,20 @@ def update_bio(): #Funcion que se activara cuando alguien haga peticion PUT a /u
         return jsonify({'message': 'Bio actualizada con exito'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar la bio', 'error': True}), 500 #Codigo 500 significa que algo salio mal con nuestro servidor o en la base de datos
+
+@user_bp.route('/pfp', methods=['PUT'])
+@jwt_required()
+def update_pfp():
+    data = request.get_json()
+    user_id = get_jwt_identity()
+    new_pfp_id = data.get('pfp_id')
+
+    if not user_id or not new_pfp_id:
+        return jsonify({'details': 'Falta user_id y pfp_id', 'error': True}), 400
+
+    success = update_user_pfp(user_id, new_pfp_id)
+
+    if success:
+        return jsonify({'message': 'PFP actualizada con exito'}), 200
+    else:
+        return jsonify({'message': 'Ocurrio un error al actualizar la PFP', 'error': True}), 500

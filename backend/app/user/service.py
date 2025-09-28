@@ -1,4 +1,11 @@
 from app.db.config import get_db
+'''
+- Update bio 🥵
+- Update pfp
+- Update banner
+- Follow user
+- Unfollow user
+'''
 
 def update_user_bio(user_id: int, bio: str) ->bool: #bool se refiere a que va a devolver un valor booleano
     conn = get_db() #Llamo a la funcion que conecta a la base de datos y devuelve objeto de conexion que lo guardamos como conn
@@ -15,4 +22,17 @@ def update_user_bio(user_id: int, bio: str) ->bool: #bool se refiere a que va a 
         cursor.close() #Cerramos el cursor, buena practica de limpieza
 
 
+def update_user_pfp(user_id:int, pfp_id: int) -> bool:
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('UPDATE app_user SET pfp_id = %s WHERE id = %s', (pfp_id, user_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return False
+    finally:
+        cursor.close()
 
