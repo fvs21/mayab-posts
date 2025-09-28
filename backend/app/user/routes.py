@@ -43,3 +43,19 @@ def update_pfp():
         return jsonify({'message': 'PFP actualizada con exito'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar la PFP', 'error': True}), 500
+
+@user_bp.route('/banner', methods=['PUT'])
+@jwt_required()
+def update_banner():
+    data = request.get_json()
+    user_id = get_jwt_identity()
+    new_banner_id = data.get('banner_id')
+
+    if not user_id or not new_banner_id:
+        return jsonify({'details': 'Falta user_id y banner_id', 'error': True}), 400
+
+    success = update_user_banner(user_id, new_banner_id)
+    if success:
+        return jsonify({'message': 'Banner actualizado con exito'}), 200
+    else:
+        return jsonify({'message': 'Ocurrio un error al actualizar el banner', 'error': True}), 500
