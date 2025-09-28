@@ -1,8 +1,8 @@
 from flask import Blueprint, g, jsonify, request
 from .serializers import RegistrationRequest
 from pydantic import ValidationError
-from ..db.config import get_db
 from . import service
+from flask_jwt_extended import jwt_required
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -13,8 +13,21 @@ def register():
 
         if service.username_already_exists(user.username):
             return jsonify({'details': 'Username already in use', 'code': 'username_already_exists', 'error': True}), 403
+        
+        if service.email_already_exists(user.email):
+            return jsonify({'details': 'Email already in use', 'code': 'email_already_exists', 'error': True}), 403     
+        
+        user = service.register_user(user)
 
-        return jsonify({"message": "Unc"})
+        access_token, refresh_token = service.create_user_token_pair(user.id)
+
+        return jsonify({"data": {"user": user.model_dump(), "access_token": access_token, "refresh_token": refresh_token}, "error": False}), 201
 
     except ValidationError as e:
-        pass
+        return jsonify({'details': 'Invalid input', 'code': 'invalid_data', 'error': True}), 400
+    
+@auth_bp.route('/session', methods=['GET'])
+@jwt_required()
+def session():
+    user = service.get_current_user()
+    return jsonify({"data": {"user": user.model_dump()}, "error": False}), 200
