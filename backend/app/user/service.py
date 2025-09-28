@@ -36,3 +36,18 @@ def update_user_pfp(user_id:int, pfp_id: int) -> bool:
     finally:
         cursor.close()
 
+def update_user_banner(user_id:int, banner_id: int) ->bool:
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('UPDATE app_user SET banner_id = %s WHERE id = %s', (banner_id, user_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return False
+    finally:
+        cursor.close()
+
+
