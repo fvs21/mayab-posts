@@ -7,6 +7,10 @@ class RegistrationRequest(BaseModel):
     full_name: str = Field(None, max_length=50)
     password: str
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
 class User(BaseModel):
     id: int
     email: str

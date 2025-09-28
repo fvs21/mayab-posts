@@ -1,7 +1,7 @@
 from .serializers import RegistrationRequest, User
 from ..db.config import get_db
-from werkzeug.security import generate_password_hash
-from typing import Tuple
+from werkzeug.security import generate_password_hash, check_password_hash
+from typing import Tuple, Optional
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
 from dotenv import load_dotenv
 import os
@@ -27,8 +27,8 @@ def get_current_user() -> User:
 
     return User(**user)
 
-def refresh_user_token(refresh_token: str) -> str:
-    new_access_token = create_access_token(identity=refresh_token)
+def refresh_user_token(user_id: int) -> str:
+    new_access_token = create_access_token(identity=str(user_id), expires_delta=timedelta(minutes=15))
     return new_access_token
 
 def username_already_exists(username: str) -> bool:
@@ -62,5 +62,21 @@ def register_user(data: RegistrationRequest) -> User:
     conn.commit()
 
     user = cursor.fetchone()
+
+    return User(**user)
+
+def authenticate(username: str, password: str) -> Optional[User]:
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM app_user WHERE username = %s', (username, ))
+
+    user = cursor.fetchone()
+
+    if not user:
+        return None
+
+    if not check_password_hash(user['password'], password):
+        return None
 
     return User(**user)
