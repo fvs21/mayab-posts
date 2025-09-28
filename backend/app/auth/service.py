@@ -18,14 +18,13 @@ def create_user_token_pair(user_id: int) -> Tuple[str, str]:
 
 def get_current_user() -> User:
     user_id = get_jwt_identity()
-
     conn = get_db()
-    cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM app_user WHERE id = %s', (user_id,))
-    user = cursor.fetchone()
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM app_user WHERE id = %s', (user_id,))
+        user = cursor.fetchone()
 
-    return User(**user)
+        return User(**user)
 
 def refresh_user_token(user_id: int) -> str:
     new_access_token = create_access_token(identity=str(user_id), expires_delta=timedelta(minutes=15))
@@ -33,50 +32,53 @@ def refresh_user_token(user_id: int) -> str:
 
 def username_already_exists(username: str) -> bool:
     conn = get_db()
-    cursor = conn.cursor()
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT EXISTS(SELECT 1 FROM app_user WHERE username = %s)', (username, ))
 
-    cursor.execute('SELECT EXISTS(SELECT 1 FROM app_user WHERE username = %s)', (username, ))
+        res = cursor.fetchone()
 
-    res = cursor.fetchone()
-
-    return res['exists']
+        return res['exists']
 
 def email_already_exists(email: str) -> bool:
     conn = get_db()
-    cursor = conn.cursor()
 
-    cursor.execute('SELECT EXISTS(SELECT 1 FROM app_user WHERE email = %s)', (email, ))
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT EXISTS(SELECT 1 FROM app_user WHERE email = %s)', (email, ))
 
-    res = cursor.fetchone()
+        res = cursor.fetchone()
 
-    return res['exists']
+        return res['exists']
 
-def register_user(data: RegistrationRequest) -> User:
+def register_user(data: RegistrationRequest) -> Optional[User]:
     conn = get_db()
-    cursor = conn.cursor()
 
-    hashed_password = generate_password_hash(data.password, method='pbkdf2' if DEBUG else 'scrypt', salt_length=8)
+    try:
+        with conn:
+            with conn.cursor() as cursor:
+                hashed_password = generate_password_hash(data.password, method='pbkdf2' if DEBUG else 'scrypt', salt_length=8)
 
-    cursor.execute('INSERT INTO app_user (email, username, full_name, password) VALUES (%s, %s, %s, %s) RETURNING id, email, username, full_name, password', (data.email, data.username, data.full_name, hashed_password))
+                cursor.execute('INSERT INTO app_user (email, username, full_name, password) VALUES (%s, %s, %s, %s) RETURNING id, email, username, full_name, password', (data.email, data.username, data.full_name, hashed_password))
 
-    conn.commit()
-
-    user = cursor.fetchone()
+                user = cursor.fetchone()
+    except Exception as e:
+        return None
 
     return User(**user)
+
 
 def authenticate(username: str, password: str) -> Optional[User]:
     conn = get_db()
-    cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM app_user WHERE username = %s', (username, ))
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM app_user WHERE username = %s', (username, ))
 
-    user = cursor.fetchone()
+        user = cursor.fetchone()
 
-    if not user:
-        return None
+        if not user:
+            return None
 
-    if not check_password_hash(user['password'], password):
-        return None
+        if not check_password_hash(user['password'], password):
+            return None
 
-    return User(**user)
+        return User(**user)

@@ -3,6 +3,7 @@ from .serializers import RegistrationRequest, LoginRequest
 from pydantic import ValidationError
 from . import service
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.utils.errors import format_validation_error
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -19,12 +20,15 @@ def register():
         
         user = service.register_user(user)
 
+        if not user:
+            return jsonify({'details': 'Error registering user', 'code': 'registration_error', 'error': True}), 500
+
         access_token, refresh_token = service.create_user_token_pair(user.id)
 
         return jsonify({"data": {"user": user.model_dump(), "access_token": access_token, "refresh_token": refresh_token}, "error": False}), 201
 
     except ValidationError as e:
-        return jsonify({'details': 'Invalid input', 'code': 'invalid_data', 'error': True}), 400
+        return jsonify({'details': format_validation_error(e), 'code': 'invalid_data', 'error': True}), 400
     
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -41,7 +45,7 @@ def login():
         return jsonify({"data": {"user": user.model_dump(), "access_token": access_token, "refresh_token": refresh_token}, "error": False}), 200
 
     except Exception as e:
-        return jsonify({'details': 'Invalid input', 'code': 'invalid_data', 'error': True}), 400
+        return jsonify({'details': format_validation_error(e), 'code': 'invalid_data', 'error': True}), 400
     
 
 @auth_bp.route('/refresh', methods=['POST'])

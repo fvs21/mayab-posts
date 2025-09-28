@@ -15,11 +15,4 @@ def create_app():
 
     JWTManager(app)
 
-    @app.teardown_appcontext
-    def close_db(error):
-        db = g.pop('db', None)
-
-        if db is not None:
-            db.close()
-
     return app
