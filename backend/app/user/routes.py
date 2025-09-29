@@ -1,7 +1,7 @@
 '''
-- Update bio 🥵
-- Update pfp 🥵
-- Update banner 🥵
+- Update bio
+- Update pfp
+- Update banner
 - Follow user
 - Unfollow user
 '''
@@ -9,7 +9,8 @@ from flask import Blueprint, jsonify, request
 
 from app.image.service import upload_image
 from app.user.service import *
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, current_user
+
 user_bp = Blueprint("user", __name__, url_prefix="/user") #Se crea el blueprint para poder usar con el prefix de user
 
 @user_bp.route('/bio', methods=['PUT']) #Crea una ruta en el blueprint de usuario la cual se encarga de actualizar la bio
@@ -78,7 +79,29 @@ def update_banner():
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar el banner', 'error': True}), 500
 
-@user_bp.route('/follow_user', methods= ['POST'])
+@user_bp.route('/<int:user_to_follow_id>/follow_user', methods= ['POST'])
 @jwt_required()
-def follow_user():
-    pass
+def follow_user(user_to_follow_id: int):
+    user_id = get_jwt_identity()
+    user_id = int(user_id)
+
+    success = follow_user(follower_id=user_id, followed_id=user_to_follow_id)
+
+    if success:
+        return jsonify({'message': 'Haz seguido al usuario'}), 200
+    else:
+        return jsonify({'message': 'Ocurrio un error al intentar seguir al usuario'}), 400
+
+
+@user_bp.route('/<int:user_to_unfollow_id>/unfollow_user', methods= ['POST'])
+@jwt_required()
+def unfollow_user(user_to_unfollow_id: int):
+    user_id = get_jwt_identity()
+    user_id = int(user_id)
+
+    success = unfollow_user(follower_id=user_id, followed_id=user_to_unfollow_id)
+
+    if success:
+        return jsonify({'message': 'Haz dejado de seguir al usuario'}), 200
+    else:
+        return jsonify({'message': 'Ocurrio un error al intentar dejar de seguir al usuario'}), 400
