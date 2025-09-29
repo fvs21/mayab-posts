@@ -1,11 +1,11 @@
-from flask import Blueprint, g, jsonify, request
-from .serializers import RegistrationRequest, LoginRequest
+from flask import Blueprint, jsonify, request
+from .serializers import *
 from pydantic import ValidationError
 from . import service
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.errors import format_validation_error
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -61,3 +61,38 @@ def refresh():
 def session():
     user = service.get_current_user()
     return jsonify({"data": {"user": user.model_dump()}, "error": False}), 200
+
+@auth_bp.route('/verify-email', methods=['POST'])
+@jwt_required()
+def verify_email():
+    try:
+        req = EmailVerificationRequest.model_validate(request.get_json())
+        user = service.get_current_user()
+
+        if user.email_verified_at is not None:
+            return jsonify({'details': 'Email already verified', 'code': 'email_already_verified', 'error': True}), 400
+
+        if not service.verify_email_code(user.id, req.code):
+            return jsonify({'details': 'Invalid verification code', 'code': 'invalid_verification_code', 'error': True}), 400
+
+        return jsonify({"error": False}), 200
+
+    except ValidationError as e:
+        return jsonify({'details': format_validation_error(e), 'code': 'invalid_data', 'error': True}), 400
+    
+@auth_bp.route('/resend-verification', methods=['POST'])
+@jwt_required()
+def resend_verification():
+    user = service.get_current_user()
+
+    try:
+        if user.email_verified_at is not None:
+            return jsonify({'details': 'Email already verified', 'code': 'email_already_verified', 'error': True}), 400
+
+        if not service.resend_verification_email(user):
+            return jsonify({'details': 'You can only request a new verification email every minute', 'code': 'resend_verification_error', 'error': True}), 429
+
+        return jsonify({"error": False}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({'details': str(e), 'code': 'resend_verification_error', 'error': True}), 500
