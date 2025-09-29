@@ -1,0 +1,3 @@
+ALTER TABLE app_user DROP password_reset_token,
+DROP password_reset_token_created_at,
+DROP password_updated_at;

@@ -1,0 +1,1 @@
+ALTER TABLE image DROP CONSTRAINT unique_image_name_per_container;
