@@ -1,12 +1,14 @@
-import os
-from flask import Blueprint, request, jsonify, current_app as app
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..db.config import get_db
-from werkzeug.utils import secure_filename
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from ..image.service import upload_image
 from ..auth.service import get_current_user
+import json
+from .serializers import *
+from pydantic import ValidationError
+from ..utils.errors import format_validation_error
+from . import service
 
-posts_bp = Blueprint("post", __name__, url_prefix="/api/posts")
+posts_bp = Blueprint("post", __name__, url_prefix="/api/post")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -19,31 +21,52 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 @jwt_required()
 def create_post():
     current_user = get_current_user()
-    content=request.form.get('content')
+    data = request.form.get('data')
 
-    image_url = None
-    images=[]
+    try:
+        json_data = json.loads(data)
+        req = CreatePostRequest.model_validate(json_data)
+    except Exception as e:
+        return jsonify({"error": True, "details": "Invalid JSON data"}), 400
+    except ValidationError as e:
+        return jsonify({"error": True, "details": format_validation_error(e)}), 400
+
+    images = []
+
     for file in request.files.values():
         if file and allowed_file(file.filename):
-            image_list=upload_image(file, "post")
-            if image_list is not None:
-                images.append(image_list)
-        else:
-            return jsonify({"error": "Formato de imagen no permitido"}), 400
-        
+            uploaded_image = upload_image(file, "post")
+            if uploaded_image is not None:
+                images.append(uploaded_image)
 
-    cursor= get_db().cursor()
     try:
-        cursor.execute("INSERT INTO post (creator_id, content) VALUES (%s, %s) RETURNING id", (current_user.id, content))
-        post_id = cursor.fetchone()['id']
+        post = service.create_post(current_user, req, images)
 
-        for image in images:
-            cursor.execute("INSERT INTO image_post (post_id, image_id) VALUES (%s, %s)", (post_id, image['id']))
+        if post is None:
+            return jsonify({"error": True, "details": "Error creating post"}), 500
 
-        cursor.connection.commit()
-        return jsonify({"message": "Post created", "post": {"content": content, "image_url": image_url}}), 201
+        return jsonify({"data": post.model_dump(), "error": False}), 201
     except Exception as e:
-        return jsonify({"error": f"Could not create post: {str(e)}"}), 500
-    finally:
-        cursor.close()
+        return jsonify({"error": True, "details": str(e)}), 500
+    
+@posts_bp.route('/<post_id>', methods=['GET'])
+@jwt_required()
+def get_post(post_id):
+    post_id = int(post_id)
 
+    post = service.get_post_by_id(post_id)
+
+    if post is None:
+        return jsonify({"error": True, "details": "Post not found"}), 404
+
+    return jsonify({"data": {"post": post.model_dump()}, "error": False}), 200
+
+@posts_bp.route('/feed', methods=['GET'])
+@jwt_required()
+def get_feed():
+    pass
+
+@posts_bp.route('/friends', methods=['GET'])
+@jwt_required()
+def get_friends_posts():
+    pass
