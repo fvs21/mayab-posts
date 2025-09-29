@@ -50,11 +50,36 @@ def update_user_banner(user_id:int, banner_id: int) ->bool:
     finally:
         cursor.close()
 
+def follow_user(follower_id: int, followed_id: int) ->bool:
 
-def follow_user() ->bool:
+    if follower_id == followed_id:
+        return False
+
+
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute()
+        cursor.execute('INSERT INTO follower (follower_id, followed_id) VALUES (%s, %s)', (follower_id, followed_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return False
+    finally:
+        cursor.close()
 
+def unfollow_user(follower_id: int, followed_id: int) ->bool:
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM follower WHERE follower_id = %s AND followed_id = %s', (follower_id, followed_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return False
+    finally:
+        cursor.close()
 
