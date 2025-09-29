@@ -4,7 +4,7 @@ set -euo pipefail
 
 source .env
 
-DB_URL="postgres://$PSQL_USER:$PSQL_PASSWORD@localhost:5432/$PSQL_DB?sslmode=disable"
+DB_URL="postgres://$PSQL_USER:$PSQL_PASSWORD@$PSQL_HOST:$PSQL_PORT/$PSQL_DB"
 MIG_DIR="app/db/migrations"
 
 psql "$DB_URL" -c "
