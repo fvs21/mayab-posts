@@ -16,7 +16,6 @@ class CreatePostRequest(BaseModel):
         return v
 
 class CreatorInfo(BaseModel):
-    id: int
     username: str
     pfp_url: Optional[str] = None
     full_name: Optional[str] = None
@@ -24,7 +23,8 @@ class CreatorInfo(BaseModel):
 class Post(BaseModel):
     id: int
     like_count: int
-    reply_count: int    
+    reply_count: int
+    creator_id: int    
     content: str = Field(..., max_length=250, description="Content of the post, max 250 characters")
     reply_to: Optional[int] = None    
     created_at: datetime
