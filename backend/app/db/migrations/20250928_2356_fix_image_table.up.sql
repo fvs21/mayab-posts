@@ -1,0 +1,2 @@
+ALTER TABLE image
+    ALTER image_path TYPE VARCHAR(500);

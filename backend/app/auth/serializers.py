@@ -33,7 +33,7 @@ class User(BaseModel):
     full_name: str
     username: str
     _password: str
-    pfp_id: Optional[int] = None
-    banner_id: Optional[int] = None
+    pfp_url: Optional[str] = None
+    banner_url: Optional[str] = None
     bio: Optional[str] = None
     email_verified_at: Optional[datetime] = None

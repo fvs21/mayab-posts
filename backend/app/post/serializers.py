@@ -7,6 +7,12 @@ class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=250, description="Content of the post, max 250 characters")
     reply_to_post_id: Optional[int] = Field(None, description="ID of the post being replied to, if applicable")
 
+class CreatorInfo(BaseModel):
+    id: int
+    username: str
+    pfp_url: Optional[str] = None
+    full_name: Optional[str] = None
+
 class Post(BaseModel):
     id: int
     creator_id: int
@@ -16,3 +22,4 @@ class Post(BaseModel):
     reply_to: Optional[int] = None    
     created_at: datetime
     images: Optional[List[str]] = []
+    creator_info: Optional[CreatorInfo] = None

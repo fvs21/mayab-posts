@@ -1,0 +1,1 @@
+ALTER TABLE post DROP created_at;

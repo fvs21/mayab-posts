@@ -25,8 +25,24 @@ def get_current_user() -> User:
         cursor.execute('SELECT * FROM app_user WHERE id = %s', (user_id,))
         user = cursor.fetchone()
 
-        return User(**user)
-    
+        user_obj = User(**user)
+
+        if user['pfp_id']:
+            cursor.execute('SELECT image_name FROM image WHERE id = %s', (user['pfp_id'],))
+            pfp = cursor.fetchone()
+
+            if pfp:
+                user_obj.pfp_url = f"/api/image/{pfp['image_name']}"
+
+        if user['banner_id']:
+            cursor.execute('SELECT image_name FROM image WHERE id = %s', (user['banner_id'],))
+            banner = cursor.fetchone()
+
+            if banner:
+                user_obj.banner_url = f"/api/image/{banner['image_name']}"
+
+        return user_obj
+
 def generate_verification_code() -> str:
     crypto_gen = secrets.SystemRandom()
 

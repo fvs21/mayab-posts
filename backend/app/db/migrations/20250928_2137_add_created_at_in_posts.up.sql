@@ -1,0 +1,1 @@
+ALTER TABLE post ADD created_at TIMESTAMP DEFAULT NOW();

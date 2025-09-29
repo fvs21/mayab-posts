@@ -7,6 +7,7 @@ from .serializers import *
 from pydantic import ValidationError
 from ..utils.errors import format_validation_error
 from . import service
+from ..user.service import get_user_followees
 
 posts_bp = Blueprint("post", __name__, url_prefix="/api/post")
 
@@ -64,9 +65,22 @@ def get_post(post_id):
 @posts_bp.route('/feed', methods=['GET'])
 @jwt_required()
 def get_feed():
-    pass
+    posts = service.get_all_posts()
+
+    return jsonify({"data": {"posts": [post.model_dump() for post in posts]}, "error": False}), 200
 
 @posts_bp.route('/friends', methods=['GET'])
 @jwt_required()
 def get_friends_posts():
+    user = get_current_user()
+
+    followees = get_user_followees(user.id)
+
+    posts = service.get_friends_feed(followees)
+
+    return jsonify({"data": {"posts": [post.model_dump() for post in posts]}, "error": False}), 200
+
+@posts_bp.route('/reply', methods=['POST'])
+@jwt_required()
+def reply_to_post():
     pass

@@ -8,10 +8,10 @@
 from flask import Blueprint, jsonify, request
 
 from app.image.service import upload_image
-from app.user.service import *
+from app.user.service import update_user_bio, update_user_pfp, update_user_banner, follow_user as follow_user_svc, unfollow_user as unfollow_user_svc
 from flask_jwt_extended import jwt_required, get_jwt_identity, current_user
 
-user_bp = Blueprint("user", __name__, url_prefix="/user") #Se crea el blueprint para poder usar con el prefix de user
+user_bp = Blueprint("user", __name__, url_prefix="/api/user") #Se crea el blueprint para poder usar con el prefix de user
 
 @user_bp.route('/bio', methods=['PUT']) #Crea una ruta en el blueprint de usuario la cual se encarga de actualizar la bio
 @jwt_required() #Se encarga de proteger la ruta para que solo los usuarios indicados puedan acceder a ella
@@ -34,6 +34,7 @@ def update_bio(): #Funcion que se activara cuando alguien haga peticion PUT a /u
 @jwt_required()
 def update_pfp():
     user_id = get_jwt_identity()
+    
     if 'file' not in request.files:
         return jsonify({'details': 'No se encontro el archivo', 'error': True}), 400
 
@@ -79,13 +80,13 @@ def update_banner():
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar el banner', 'error': True}), 500
 
-@user_bp.route('/<int:user_to_follow_id>/follow_user', methods= ['POST'])
+@user_bp.route('/follow/<user_to_follow_id>', methods= ['POST'])
 @jwt_required()
 def follow_user(user_to_follow_id: int):
     user_id = get_jwt_identity()
     user_id = int(user_id)
 
-    success = follow_user(follower_id=user_id, followed_id=user_to_follow_id)
+    success = follow_user_svc(follower_id=user_id, followed_id=user_to_follow_id)
 
     if success:
         return jsonify({'message': 'Haz seguido al usuario'}), 200
@@ -93,13 +94,13 @@ def follow_user(user_to_follow_id: int):
         return jsonify({'message': 'Ocurrio un error al intentar seguir al usuario'}), 400
 
 
-@user_bp.route('/<int:user_to_unfollow_id>/unfollow_user', methods= ['POST'])
+@user_bp.route('/unfollow/<user_to_unfollow_id>', methods= ['POST'])
 @jwt_required()
 def unfollow_user(user_to_unfollow_id: int):
     user_id = get_jwt_identity()
     user_id = int(user_id)
 
-    success = unfollow_user(follower_id=user_id, followed_id=user_to_unfollow_id)
+    success = unfollow_user_svc(follower_id=user_id, followed_id=user_to_unfollow_id)
 
     if success:
         return jsonify({'message': 'Haz dejado de seguir al usuario'}), 200

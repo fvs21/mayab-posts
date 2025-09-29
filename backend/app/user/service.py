@@ -1,4 +1,6 @@
 from app.db.config import get_db
+from typing import Optional, List
+
 '''
 - Update bio 🥵
 - Update pfp 🥵
@@ -7,7 +9,7 @@ from app.db.config import get_db
 - Unfollow user
 '''
 
-def update_user_bio(user_id: int, bio: str) ->bool: #bool se refiere a que va a devolver un valor booleano
+def update_user_bio(user_id: int, bio: str) -> bool: #bool se refiere a que va a devolver un valor booleano
     conn = get_db() #Llamo a la funcion que conecta a la base de datos y devuelve objeto de conexion que lo guardamos como conn
     cursor = conn.cursor() #cursor se encarga de que podamos ejecutar querys de SQL
     try:
@@ -51,15 +53,20 @@ def update_user_banner(user_id:int, banner_id: int) ->bool:
         cursor.close()
 
 def follow_user(follower_id: int, followed_id: int) -> bool:
-
     if follower_id == followed_id:
         return False
 
     conn = get_db()
-    cursor = conn.cursor()
+    
     try:
-        cursor.execute('INSERT INTO follower (follower_id, followed_id) VALUES (%s, %s)', (follower_id, followed_id))
-        conn.commit()
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT EXISTS (SELECT 1 FROM follower WHERE follower_id = %s AND followed_id = %s)', (follower_id, followed_id))
+            if cursor.fetchone()['exists']:
+                return False
+
+            cursor.execute('INSERT INTO follower (follower_id, followed_id) VALUES (%s, %s)', (follower_id, followed_id))
+            conn.commit()
+
         return True
     except Exception as e:
         print(e)
@@ -68,17 +75,34 @@ def follow_user(follower_id: int, followed_id: int) -> bool:
     finally:
         cursor.close()
         
-def unfollow_user(follower_id: int, followed_id: int) ->bool:
+def unfollow_user(follower_id: int, followed_id: int) -> bool:
     conn = get_db()
-    cursor = conn.cursor()
+
     try:
-        cursor.execute('DELETE FROM follower WHERE follower_id = %s AND followed_id = %s', (follower_id, followed_id))
-        conn.commit()
-        return True
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT EXISTS (SELECT 1 FROM follower WHERE follower_id = %s AND followed_id = %s)', (follower_id, followed_id))
+            if not cursor.fetchone()['exists']:
+                return False
+
+            cursor.execute('DELETE FROM follower WHERE follower_id = %s AND followed_id = %s', (follower_id, followed_id))
+            conn.commit()
+            return True
     except Exception as e:
         print(e)
         conn.rollback()
         return False
-    finally:
-        cursor.close()
 
+def get_user_followees(user_id: int) -> List[int]:
+    conn = get_db()
+    followees = []
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT followed_id FROM follower WHERE follower_id = %s', (user_id,))
+            rows = cursor.fetchall()
+            followees = [row['followed_id'] for row in rows]
+
+        return followees
+    except Exception as e:
+        print(e)
+        return []
