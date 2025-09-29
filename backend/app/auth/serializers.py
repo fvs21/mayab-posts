@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 class RegistrationRequest(BaseModel):
     email: str = Field(..., min_length=8, max_length=255)
@@ -11,6 +12,9 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class EmailVerificationRequest(BaseModel):
+    code: str
+
 class User(BaseModel):  
     id: int
     email: str
@@ -20,3 +24,4 @@ class User(BaseModel):
     pfp_id: Optional[int] = None
     banner_id: Optional[int] = None
     bio: Optional[str] = None
+    email_verified_at: Optional[datetime] = None

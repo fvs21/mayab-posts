@@ -1,0 +1,7 @@
+ALTER TABLE app_user ADD email_verified_at TIMESTAMP WITH TIME ZONE;
+
+CREATE TABLE email_verification_data (
+    user_id INTEGER PRIMARY KEY NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    verification_code VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
