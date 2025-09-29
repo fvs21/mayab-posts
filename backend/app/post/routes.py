@@ -86,4 +86,3 @@ def get_post_replies(post_id):
     post_id=int(post_id)
     replies = service.get_post_replies(post_id)
     return jsonify({"data": {"replies": [reply.model_dump() for reply in replies]}, "error": False}), 200
-
