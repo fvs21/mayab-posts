@@ -67,7 +67,7 @@ def follow_user(follower_id: int, followed_id: int) ->bool:
         return False
     finally:
         cursor.close()
-
+        
 def unfollow_user(follower_id: int, followed_id: int) ->bool:
     conn = get_db()
     cursor = conn.cursor()
