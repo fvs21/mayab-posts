@@ -80,7 +80,10 @@ def get_friends_posts():
 
     return jsonify({"data": {"posts": [post.model_dump() for post in posts]}, "error": False}), 200
 
-@posts_bp.route('/reply', methods=['POST'])
+@posts_bp.route('/replies/<post_id>', methods=['GET'])
 @jwt_required()
-def reply_to_post():
-    pass
+def get_post_replies(post_id):
+    post_id=int(post_id)
+    replies = service.get_post_replies(post_id)
+    return jsonify({"data": {"replies": [reply.model_dump() for reply in replies]}, "error": False}), 200
+

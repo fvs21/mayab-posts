@@ -10,7 +10,7 @@ def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Opt
     try:
         with conn.cursor() as cursor:
             if data.reply_to_post_id:
-                cursor.execute("INSERT INTO post (creator_id, content, reply_to_post_id) VALUES (%s, %s, %s) RETURNING *", (user.id, data.content, data.reply_to_post_id))
+                cursor.execute("INSERT INTO post (creator_id, content, reply_to) VALUES (%s, %s, %s) RETURNING *", (user.id, data.content, data.reply_to_post_id))
             else:
                 cursor.execute("INSERT INTO post (creator_id, content) VALUES (%s, %s) RETURNING *", (user.id, data.content))
             post = cursor.fetchone()
@@ -155,3 +155,16 @@ def get_friends_feed(followees_id: List[int]) -> List[Post]:
     except Exception as e:
         print(e)
         return []
+    
+def get_post_replies(post_id: int) -> List[Post]:
+    conn= get_db()
+    replies = []
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM post WHERE reply_to = %s ORDER BY created_at DESC", (post_id,))
+            replies_data = cursor.fetchall()
+            replies = get_posts_with_details([reply['id'] for reply in replies_data])
+    except Exception as e:
+        print(e)
+
+    return replies
