@@ -44,7 +44,7 @@ def login():
 
         return jsonify({"data": {"user": user.model_dump(), "access_token": access_token, "refresh_token": refresh_token}, "error": False}), 200
 
-    except Exception as e:
+    except ValidationError as e:
         return jsonify({'details': format_validation_error(e), 'code': 'invalid_data', 'error': True}), 400
     
 
