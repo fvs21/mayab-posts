@@ -11,8 +11,8 @@ def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Opt
     try:
         with conn.cursor() as cursor:
             if data.reply_to_post_id:
-                cursor.execute("INSERT INTO post (creator_id, content, reply_to) VALUES (%s, %s, %s) RETURNING *", (user.id, data.content, data.reply_to_post_id))
                 cursor.execute("UPDATE post SET reply_count = reply_count + 1 WHERE id = %s", (data.reply_to_post_id,))
+                cursor.execute("INSERT INTO post (creator_id, content, reply_to) VALUES (%s, %s, %s) RETURNING *", (user.id, data.content, data.reply_to_post_id))
             else:
                 cursor.execute("INSERT INTO post (creator_id, content) VALUES (%s, %s) RETURNING *", (user.id, data.content))
             post = cursor.fetchone()
