@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from datetime import timedelta, datetime, timezone
 import secrets
+from ..image.service import generate_presigned_url
 
 load_dotenv()
 
@@ -28,18 +29,18 @@ def get_current_user() -> User:
         user_obj = User(**user)
 
         if user['pfp_id']:
-            cursor.execute('SELECT image_name FROM image WHERE id = %s', (user['pfp_id'],))
+            cursor.execute('SELECT image_path FROM image WHERE id = %s', (user['pfp_id'],))
             pfp = cursor.fetchone()
 
             if pfp:
-                user_obj.pfp_url = f"/api/image/{pfp['image_name']}"
+                user_obj.pfp_url = generate_presigned_url(pfp['image_path'])
 
         if user['banner_id']:
-            cursor.execute('SELECT image_name FROM image WHERE id = %s', (user['banner_id'],))
+            cursor.execute('SELECT image_path FROM image WHERE id = %s', (user['banner_id'],))
             banner = cursor.fetchone()
 
             if banner:
-                user_obj.banner_url = f"/api/image/{banner['image_name']}"
+                user_obj.banner_url = generate_presigned_url(banner['image_path'])
 
         return user_obj
 
