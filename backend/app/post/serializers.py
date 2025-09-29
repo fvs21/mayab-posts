@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
 from typing import List
@@ -6,6 +6,14 @@ from typing import List
 class CreatePostRequest(BaseModel):
     content: str = Field(..., max_length=250, description="Content of the post, max 250 characters")
     reply_to_post_id: Optional[int] = Field(None, description="ID of the post being replied to, if applicable")
+
+    @field_validator('content')
+    def content_must_not_be_empty(cls, v):
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError('Content must not be empty')
+        return v
 
 class CreatorInfo(BaseModel):
     id: int
@@ -15,7 +23,6 @@ class CreatorInfo(BaseModel):
 
 class Post(BaseModel):
     id: int
-    creator_id: int
     like_count: int
     reply_count: int    
     content: str = Field(..., max_length=250, description="Content of the post, max 250 characters")

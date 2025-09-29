@@ -3,14 +3,16 @@ from ..db.config import get_db
 from typing import Optional, List
 from .serializers import CreatePostRequest, Post, CreatorInfo
 from ..image.serializers import Image
-from ..user.service import get_user_followees
 
 def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Optional[Post]:
     conn = get_db()
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO post (creator_id, content) VALUES (%s, %s) RETURNING *", (user.id, data.content))
+            if data.reply_to_post_id:
+                cursor.execute("INSERT INTO post (creator_id, content, reply_to_post_id) VALUES (%s, %s, %s) RETURNING *", (user.id, data.content, data.reply_to_post_id))
+            else:
+                cursor.execute("INSERT INTO post (creator_id, content) VALUES (%s, %s) RETURNING *", (user.id, data.content))
             post = cursor.fetchone()
 
             if not post:
@@ -73,6 +75,51 @@ def get_post_by_id(post_id: int) -> Optional[Post]:
         print(e)
         return None
     
+def get_posts_with_details(post_ids: List[int]) -> List[Post]:
+    posts = []
+    conn = get_db()
+
+    with conn.cursor() as cursor:
+        format_strings = ','.join(['%s'] * len(post_ids))
+
+        cursor.execute(f"""
+                SELECT 
+                    p.id, p.creator_id, p.like_count, p.reply_count, p.content, p.created_at,
+                    u.username, u.full_name, u.pfp_id,
+                    COALESCE(array_agg(i.image_name) FILTER (WHERE i.image_name IS NOT NULL), '{{}}') as image_names,
+                    pfp_img.image_name as pfp_image_name
+                FROM post p
+                JOIN app_user u ON p.creator_id = u.id
+                LEFT JOIN post_image pi ON p.id = pi.post_id
+                LEFT JOIN image i ON pi.image_id = i.id
+                LEFT JOIN image pfp_img ON u.pfp_id = pfp_img.id
+                WHERE p.id IN ({format_strings})
+                GROUP BY p.id, u.id, pfp_img.image_name
+                ORDER BY p.created_at DESC
+        """, tuple(post_ids))
+        
+        posts_data = cursor.fetchall()
+
+        for post_data in posts_data:
+            post = Post(
+                id=post_data['id'],
+                creator_id=post_data['creator_id'],
+                like_count=post_data['like_count'],
+                reply_count=post_data['reply_count'],
+                content=post_data['content'],
+                created_at=post_data['created_at'],
+                images=[f"/api/image/{img_name}" for img_name in post_data['image_names']] if post_data['image_names'] else [],
+                creator_info=CreatorInfo(
+                    id=post_data['creator_id'],
+                    username=post_data['username'],
+                    full_name=post_data['full_name'],
+                    pfp_url=f"/api/image/{post_data['pfp_image_name']}" if post_data['pfp_image_name'] else None
+                )
+            )
+            posts.append(post)
+    
+    return posts
+    
 def get_all_posts() -> List[Post]:
     conn = get_db()
     posts = []
@@ -83,13 +130,7 @@ def get_all_posts() -> List[Post]:
             posts_data = cursor.fetchall()
 
         
-        for post in posts_data:
-            post_obj = get_post_by_id(post['id'])      
-
-            if post_obj:
-                posts.append(post_obj)  
-
-        return posts
+        return get_posts_with_details([post_id['id'] for post_id in posts_data])
     except Exception as e:
         print(e)
         return []
@@ -108,11 +149,7 @@ def get_friends_feed(followees_id: List[int]) -> List[Post]:
             cursor.execute(f"SELECT id FROM post WHERE creator_id IN ({format_strings}) ORDER BY created_at DESC", tuple(followees_id))
             posts_data = cursor.fetchall()
 
-            for post_id in posts_data:
-                post = get_post_by_id(post_id['id'])
-
-                if post:
-                    posts.append(post)
+        return get_posts_with_details([post_id['id'] for post_id in posts_data])
 
         return posts
     except Exception as e:

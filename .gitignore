@@ -1,3 +1,4 @@
 **/*.env
 
 backend/env
+backend/images
