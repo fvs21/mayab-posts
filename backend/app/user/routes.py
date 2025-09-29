@@ -105,4 +105,3 @@ def unfollow_user(user_to_unfollow_id: int):
         return jsonify({'message': 'Haz dejado de seguir al usuario'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al intentar dejar de seguir al usuario'}), 400
-

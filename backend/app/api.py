@@ -1,9 +1,11 @@
 from app.auth.routes import auth_bp
 from app.user.routes import user_bp
+from app.post.routes import posts_bp
 
 BLUEPRINTS = [ 
     auth_bp,
-    user_bp
+    user_bp,
+    posts_bp
 ]
 
 def register_blueprints(app):

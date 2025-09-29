@@ -82,6 +82,7 @@ def register_user(data: RegistrationRequest) -> Optional[User]:
                 # send_verification_email(user.email, verification_code)
 
     except Exception as e:
+        print(e)
         return None
 
     return user

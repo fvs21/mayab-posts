@@ -55,7 +55,6 @@ def follow_user(follower_id: int, followed_id: int) ->bool:
     if follower_id == followed_id:
         return False
 
-
     conn = get_db()
     cursor = conn.cursor()
     try:
