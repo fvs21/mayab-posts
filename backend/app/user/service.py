@@ -50,7 +50,7 @@ def update_user_banner(user_id:int, banner_id: int) ->bool:
     finally:
         cursor.close()
 
-def follow_user(follower_id: int, followed_id: int) ->bool:
+def follow_user(follower_id: int, followed_id: int) -> bool:
 
     if follower_id == followed_id:
         return False

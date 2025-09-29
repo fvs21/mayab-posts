@@ -1,6 +1,6 @@
 from flask import request
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename, get_content_type
+from werkzeug.utils import secure_filename
 import uuid
 from dotenv import load_dotenv
 import os
@@ -10,7 +10,7 @@ from typing import Optional
 
 load_dotenv()
 
-IMAGE_STORAGE_PATH = os.getenv("IMAGE_STORAGE_PATH", "./images")
+IMAGE_STORAGE_PATH = os.getenv("IMAGE_UPLOAD_PATH", "/images")
 
 def upload_image(image: FileStorage, container: str) -> Optional[Image]:
     '''
@@ -33,31 +33,32 @@ def upload_image(image: FileStorage, container: str) -> Optional[Image]:
     conn = get_db()
 
     try:
-        with conn:
-            with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO image (container, image_name, image_path, image_type) VALUES (%s, %s, %s, %s) RETURNING id, image_name, image_path, image_type, container', (container, unique_file_name, image_path, get_content_type(image)))
-                image_data = cursor.fetchone()
+        with conn.cursor() as cursor:
+            cursor.execute('INSERT INTO image (container, image_name, image_path, image_type) VALUES (%s, %s, %s, %s) RETURNING id, image_name, image_path, image_type, container', (container, unique_file_name, image_path, image.content_type))
+            image_data = cursor.fetchone()
+
+            conn.commit()
 
         image.save(image_path)
-
         return Image(**image_data)
     except Exception as e:
+        print(e)
+        conn.rollback()
         if os.path.exists(image_path):
             os.remove(image_path)
             #TODO: Raise corresponding error
         return None
 
 
-
-def retrieve_image(image_id: int) -> Optional[Image]:
+def retrieve_image(image_name: str) -> Optional[Image]:
     '''
-    Retrieves the image url using the image ID.
+    Retrieves the image url using the image name.
     '''
     
     conn = get_db()
 
     with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM image WHERE id = %s', (image_id,))
+        cursor.execute('SELECT * FROM image WHERE image_name = %s', (image_name,))
         image = cursor.fetchone()
 
     if not image:
