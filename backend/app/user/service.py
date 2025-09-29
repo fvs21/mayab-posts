@@ -1,8 +1,8 @@
 from app.db.config import get_db
 '''
 - Update bio 🥵
-- Update pfp
-- Update banner
+- Update pfp 🥵
+- Update banner 🥵
 - Follow user
 - Unfollow user
 '''
@@ -17,7 +17,7 @@ def update_user_bio(user_id: int, bio: str) ->bool: #bool se refiere a que va a 
     except Exception as e: #Si algo falla, devuelve una exception para que el codigo no se rompa, "Exception as e" se encarga de atrapar cualquier tipo de error y guarda el objeto en una variable e
         print(e) #nos enseña que salio mal
         conn.rollback() #Se encarga de cancelar y revertir las acciones que se hicieron, estilo CTRL +Z, haciendo que la base de datos no se quede a medio actualizar
-        return False #devuelve false
+        return False
     finally: #Se ejecuta independientemente de que camino tomo el codigo, si fue el try o la exception
         cursor.close() #Cerramos el cursor, buena practica de limpieza
 
@@ -49,5 +49,12 @@ def update_user_banner(user_id:int, banner_id: int) ->bool:
         return False
     finally:
         cursor.close()
+
+
+def follow_user() ->bool:
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute()
 
 

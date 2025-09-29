@@ -1,7 +1,7 @@
 '''
 - Update bio 🥵
 - Update pfp 🥵
-- Update banner
+- Update banner 🥵
 - Follow user
 - Unfollow user
 '''
@@ -59,3 +59,5 @@ def update_banner():
         return jsonify({'message': 'Banner actualizado con exito'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar el banner', 'error': True}), 500
+
+@user_bp.route('/follow_user', methods= ['POST'])
