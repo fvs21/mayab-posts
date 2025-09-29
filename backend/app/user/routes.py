@@ -1,11 +1,13 @@
 '''
 - Update bio 🥵
 - Update pfp 🥵
-- Update banner
+- Update banner 🥵
 - Follow user
 - Unfollow user
 '''
 from flask import Blueprint, jsonify, request
+
+from app.image.service import upload_image
 from app.user.service import *
 from flask_jwt_extended import jwt_required, get_jwt_identity
 user_bp = Blueprint("user", __name__, url_prefix="/user") #Se crea el blueprint para poder usar con el prefix de user
@@ -30,32 +32,52 @@ def update_bio(): #Funcion que se activara cuando alguien haga peticion PUT a /u
 @user_bp.route('/pfp', methods=['PUT'])
 @jwt_required()
 def update_pfp():
-    data = request.get_json()
     user_id = get_jwt_identity()
-    new_pfp_id = data.get('pfp_id')
+    if 'file' not in request.files:
+        return jsonify({'details': 'No se encontro el archivo', 'error': True}), 400
 
-    if not user_id or not new_pfp_id:
-        return jsonify({'details': 'Falta user_id y pfp_id', 'error': True}), 400
+    files = request.files['file']
 
-    success = update_user_pfp(user_id, new_pfp_id)
+    if files.filename == '':
+        return jsonify({'details': 'Ningun archivo fue seleccionado', 'error': True}), 400
+
+    image_data = upload_image(files, container="pfp")
+
+    if not image_data:
+        return jsonify({'details': 'Ocurrio un error al subir la imagen', 'error': True}), 500
+
+    success = update_user_pfp(user_id, image_data.id)
 
     if success:
         return jsonify({'message': 'PFP actualizada con exito'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar la PFP', 'error': True}), 500
 
+
 @user_bp.route('/banner', methods=['PUT'])
 @jwt_required()
 def update_banner():
-    data = request.get_json()
     user_id = get_jwt_identity()
-    new_banner_id = data.get('banner_id')
+    if 'file' not in request.files:
+        return jsonify({'details': 'No se encontro el archivo', 'error': True}), 400
 
-    if not user_id or not new_banner_id:
-        return jsonify({'details': 'Falta user_id y banner_id', 'error': True}), 400
+    files = request.files['file']
 
-    success = update_user_banner(user_id, new_banner_id)
+    if files.filename == '':
+        return jsonify({'details': 'Ningun archivo fue seleccionado', 'error': True}), 400
+
+    image_data = upload_image(files, container="banner")
+
+    if not image_data:
+        return jsonify({'details': 'Ocurrio un error al subir la imagen', 'error': True}), 500
+
+    success = update_user_banner(user_id, image_data.id)
+
     if success:
         return jsonify({'message': 'Banner actualizado con exito'}), 200
     else:
         return jsonify({'message': 'Ocurrio un error al actualizar el banner', 'error': True}), 500
+
+@user_bp.route('/follow_user', methods= ['POST'])
+@jwt_required()
+def follow_user():
