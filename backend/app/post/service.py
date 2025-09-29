@@ -3,6 +3,7 @@ from ..db.config import get_db
 from typing import Optional, List
 from .serializers import CreatePostRequest, Post, CreatorInfo
 from ..image.serializers import Image
+from ..image.service import generate_presigned_url
 
 def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Optional[Post]:
     conn = get_db()
@@ -24,7 +25,7 @@ def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Opt
             for image in images:
                 cursor.execute("INSERT INTO post_image (post_id, image_id) VALUES (%s, %s)", (post.id, image.id))
 
-            post.images = [f"/api/image/{img.image_name}" for img in images]
+            post.images = [generate_presigned_url(img.image_path) for img in images]
 
             conn.commit()
         return post
@@ -54,7 +55,7 @@ def get_post_by_id(post_id: int) -> Optional[Post]:
             """, (post.id,))
             images_data = cursor.fetchall()
 
-            post.images = [f"/api/image/{img['image_name']}" for img in images_data]
+            post.images = [generate_presigned_url(img['image_path']) for img in images_data]
 
             cursor.execute("SELECT id, username, pfp_id, full_name FROM app_user WHERE id = %s", (post.creator_id,))
 

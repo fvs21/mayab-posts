@@ -174,5 +174,19 @@ def authenticate(username: str, password: str) -> Optional[User]:
 
         if not check_password_hash(user['password'], password):
             return None
+        
+        if user['pfp_id']:
+            cursor.execute('SELECT image_path FROM image WHERE id = %s', (user['pfp_id'],))
+            pfp = cursor.fetchone()
+
+            if pfp:
+                user['pfp_url'] = generate_presigned_url(pfp['image_path'])
+
+        if user['banner_id']:
+            cursor.execute('SELECT image_path FROM image WHERE id = %s', (user['banner_id'],))
+            banner = cursor.fetchone()
+
+            if banner:
+                user['banner_url'] = generate_presigned_url(banner['image_path'])
 
         return User(**user)
