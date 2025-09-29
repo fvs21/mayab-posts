@@ -81,3 +81,4 @@ def update_banner():
 @user_bp.route('/follow_user', methods= ['POST'])
 @jwt_required()
 def follow_user():
+    pass

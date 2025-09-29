@@ -56,5 +56,9 @@ def follow_user() ->bool:
     cursor = conn.cursor()
     try:
         cursor.execute()
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return False    
 
 
