@@ -1,13 +1,12 @@
 import FlashRenderer from '@/features/flash/components/FlashRenderer';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Provider } from 'jotai';
-import 'react-native-reanimated';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'jotai';
 import { useState } from 'react';
+import 'react-native-reanimated';
+import RoutesProvider from './RoutesProvider';
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,11 +18,7 @@ export default function RootLayout() {
       <Provider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <FlashRenderer />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-          </Stack>
-          <StatusBar style="auto" />
+          <RoutesProvider />
         </ThemeProvider>
       </Provider>
     </QueryClientProvider>

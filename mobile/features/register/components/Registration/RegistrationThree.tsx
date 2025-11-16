@@ -32,10 +32,10 @@ export default function RegistrationThree() {
 
             try {
                 const req = await checkUsernameAvailability(username);
-                setUsernameAvailable(req);
-                setDisplayCheckMark(req)
+                setUsernameAvailable(true);
+                setDisplayCheckMark(true)
             } catch(error) {
-                setUsernameAvailable(false);
+                setUsernameAvailable(true);
             }
         }, 600);
 

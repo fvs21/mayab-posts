@@ -5,7 +5,7 @@ import ValidatedInput from "@/components/ValidatedInput";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useEmail } from "../../store";
-import { validateEmail } from "../../utils";
+import { validateEmail } from "../../utils/validation";
 import styles from "./Registration.style";
 
 export default function RegistrationTwo() {

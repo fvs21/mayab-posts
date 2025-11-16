@@ -33,7 +33,9 @@ export default function RegistrationOne() {
                 />
                 <PrimaryDisabledButton
                     text="Next"
-                    click={() => navigation.push("Register", {step: 1})}
+                    click={() => {
+                        navigation.push("Register", {step: 1});
+                    }}
                     disabled={name.length < 5}
                 />
             </KeyboardAvoidingView>
