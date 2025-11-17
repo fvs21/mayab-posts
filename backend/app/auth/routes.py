@@ -46,15 +46,6 @@ def login():
 
     except ValidationError as e:
         return jsonify({'details': format_validation_error(e), 'code': 'invalid_data', 'error': True}), 400
-    
-
-@auth_bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    user_id = get_jwt_identity()
-    access_token = service.refresh_user_token(user_id)
-    return jsonify({"data": {"access_token": access_token}, "error": False}), 200
-
 
 @auth_bp.route('/session', methods=['GET'])
 @jwt_required()

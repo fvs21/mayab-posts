@@ -1,3 +1,5 @@
+import { User } from "@/types/globals";
+
 export type RegisterBody = {
     full_name: string;
     email: string;
@@ -6,7 +8,7 @@ export type RegisterBody = {
 }
 
 export type RegisterResponse = {
-    //user: User;
+    user: User;
     access_token: string;
     refresh_token: string;
 }

@@ -16,21 +16,21 @@ export default function RegistrationFour() {
     const [username] = useUsername();
     const [password, setPassword] = usePassword();
 
-    const navigation = useNavigation<any>();
     const { register, isPending, registerDisabled } = useRegister();
 
     const body: RegisterBody = {
         full_name: fullName,
-        email: email,
-        username: username,
-        password: password
+        email,
+        username,
+        password
     }
 
     async function handleRegister() {
         try {
             await register(body);
+
         } catch {
-            flash("An error occurred. Please try again later.", 5000, "error");
+            flash("An error occurred. Please try again later.", 4000, "error");
         }
     }
 
@@ -50,9 +50,9 @@ export default function RegistrationFour() {
                     style={styles.input} 
                 />
                 <PrimaryDisabledButton
-                    text="Next"
+                    text={isPending ? "Loading..." : "Register"}
                     click={handleRegister}
-                    disabled={password.length <= 8}
+                    disabled={password.length <= 8 || registerDisabled}
                 />
             </KeyboardAvoidingView>
         </View>

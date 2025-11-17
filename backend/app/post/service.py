@@ -105,17 +105,16 @@ def get_posts_with_details(post_ids: List[int]) -> List[Post]:
         for post_data in posts_data:
             post = Post(
                 id=post_data['id'],
-                creator_id=post_data['creator_id'],
                 like_count=post_data['like_count'],
                 reply_count=post_data['reply_count'],
                 content=post_data['content'],
                 created_at=post_data['created_at'],
-                images=[f"/api/image/{img_name}" for img_name in post_data['image_names']] if post_data['image_names'] else [],
-                creator_info=CreatorInfo(
+                images=[f"http://192.168.1.165:8080/api/image/{img_name}" for img_name in post_data['image_names']] if post_data['image_names'] else [],
+                creator=CreatorInfo(
                     id=post_data['creator_id'],
                     username=post_data['username'],
                     full_name=post_data['full_name'],
-                    pfp_url=f"/api/image/{post_data['pfp_image_name']}" if post_data['pfp_image_name'] else None
+                    pfp_url=f"http://192.168.1.165:8080/api/image/{post_data['pfp_image_name']}" if post_data['pfp_image_name'] else None
                 )
             )
             posts.append(post)
@@ -124,7 +123,6 @@ def get_posts_with_details(post_ids: List[int]) -> List[Post]:
     
 def get_all_posts() -> List[Post]:
     conn = get_db()
-    posts = []
 
     try:
         with conn.cursor() as cursor:

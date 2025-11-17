@@ -1,19 +1,22 @@
 import { apiGuest } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RegisterBody, RegisterResponse } from "../types";
+import { DefaultResponse, User } from "@/types/globals";
+import * as SecureStore from 'expo-secure-store';
 
 export const useRegister = () => {
     const queryClient = useQueryClient();
 
     const { mutateAsync: register, isPending, isError } = useMutation({
-        mutationFn: async (body: RegisterBody): Promise<RegisterResponse> => {
+        mutationFn: async (body: RegisterBody): Promise<DefaultResponse<"data", RegisterResponse>> => {
             const request = await apiGuest.post("/auth/register", body);
             return request.data;
         },
-        onSuccess(data) {
-            //queryClient.setQueryData(["user"], data.user);
-            queryClient.setQueryData(["access_token"], data.access_token);
-        },
+        onSuccess: async (data: DefaultResponse<"data", RegisterResponse>) => {
+            await SecureStore.setItemAsync('token', data.data.access_token);
+            queryClient.setQueryData(['access_token'], data.data.access_token);
+            queryClient.setQueryData(['user'], data.data.user);
+        }
     });
 
     return {

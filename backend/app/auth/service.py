@@ -14,7 +14,7 @@ load_dotenv()
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 def create_user_token_pair(user_id: int) -> Tuple[str, str]:
-    access_token = create_access_token(identity=str(user_id), expires_delta=timedelta(minutes=15))
+    access_token = create_access_token(identity=str(user_id), expires_delta=timedelta(days=30))
     refresh_token = create_refresh_token(identity=str(user_id), expires_delta=timedelta(days=30))
     return access_token, refresh_token
 
