@@ -3,13 +3,23 @@ import { ThemedView } from '@/components/themed-view';
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Post as PostType } from '../../types';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Post({ post }: { post: PostType }) {
     const time = new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const navigation = useNavigation<any>();
+    const queryClient = useQueryClient();
 
     return (
         <ThemedView style={styles.container}>
-            <TouchableOpacity activeOpacity={0.85} style={styles.row}>
+            <TouchableOpacity 
+                activeOpacity={0.85} style={styles.row}
+                onPress={() => {
+                    queryClient.setQueryData(['post', post.id], { post });
+                    navigation.push('Post', { id: post.id });
+                }}
+            >
                 <Image
                     source={post.creator.profile_picture ? { uri: post.creator.profile_picture } : undefined}
                     style={styles.avatar}

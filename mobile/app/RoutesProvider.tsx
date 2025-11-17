@@ -4,6 +4,8 @@ import { View } from 'react-native';
 import Register from './root/auth/register';
 import Feed from './root/feed';
 import Login from './root/login';
+import Post from './root/post';
+import CreatePost from './root/create-post';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,10 @@ export default function RoutesProvider() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Feed" component={Feed} />
+            <Stack.Screen name="Post" component={Post} />
+            <Stack.Group screenOptions={{ presentation: 'modal' }}>
+                <Stack.Screen name="CreatePost" component={CreatePost} />
+            </Stack.Group>
         </Stack.Navigator>
     )
 

@@ -1,10 +1,11 @@
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { View } from 'react-native';
 import { api, apiMultiPart } from '..';
 
 export default function AuthenticationProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
         let interceptor: number;
@@ -13,6 +14,7 @@ export default function AuthenticationProvider({ children }: { children: React.R
         const checkAuthToken = async () => {
             try {
                 const token = await SecureStore.getItemAsync('token');
+                setToken(token);
 
                 interceptor = api.interceptors.request.use(
                     (config) => {
@@ -43,6 +45,27 @@ export default function AuthenticationProvider({ children }: { children: React.R
             apiMultiPart.interceptors.request.eject(interceptor2);
         } 
     }, []);
+
+    useLayoutEffect(() => {
+        const interceptor = api.interceptors.request.use(
+            (config) => {
+                config.headers.Authorization = !(config as any)._retry && token ? `Bearer ${token}` : config.headers.Authorization;
+                return config;
+            }
+        )
+
+        const interceptor2 = apiMultiPart.interceptors.request.use(
+            (config) => {
+                config.headers.Authorization = !(config as any)._retry && token ? `Bearer ${token}` : config.headers.Authorization;
+                return config;
+            }
+        )
+
+        return () => {
+            api.interceptors.request.eject(interceptor);
+            apiMultiPart.interceptors.request.eject(interceptor2);
+        }
+    }, [token]);
 
     if (isLoading) {
         return <View />
