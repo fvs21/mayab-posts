@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/themed-view';
+import ThemedView from '@/components/themed-view';
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Post as PostType } from '../../types';

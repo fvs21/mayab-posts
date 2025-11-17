@@ -4,6 +4,7 @@ from typing import Optional, List
 from .serializers import CreatePostRequest, Post, CreatorInfo
 from ..image.serializers import Image
 from ..image.service import generate_presigned_url
+import traceback
 
 def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Optional[Post]:
     conn = get_db()
@@ -25,7 +26,7 @@ def create_post(user: User, data: CreatePostRequest, images: List[Image]) -> Opt
             for image in images:
                 cursor.execute("INSERT INTO post_image (post_id, image_id) VALUES (%s, %s)", (post.id, image.id))
 
-            post.images = [generate_presigned_url(img.image_path) for img in images]
+            post.images = [generate_presigned_url(f"{img.container}/{img.image_name}") for img in images]
 
             conn.commit()
         return post
@@ -88,7 +89,7 @@ def get_posts_with_details(post_ids: List[int]) -> List[Post]:
                 SELECT 
                     p.id, p.creator_id, p.like_count, p.reply_count, p.content, p.created_at,
                     u.username, u.full_name, u.pfp_id,
-                    COALESCE(array_agg(i.image_name) FILTER (WHERE i.image_name IS NOT NULL), '{{}}') as image_names,
+                    COALESCE(array_agg(i.image_path) FILTER (WHERE i.image_path IS NOT NULL), '{{}}') as images,
                     pfp_img.image_name as pfp_image_name
                 FROM post p
                 JOIN app_user u ON p.creator_id = u.id
@@ -109,15 +110,17 @@ def get_posts_with_details(post_ids: List[int]) -> List[Post]:
                 reply_count=post_data['reply_count'],
                 content=post_data['content'],
                 created_at=post_data['created_at'],
-                images=[f"http://192.168.1.165:8080/api/image/{img_name}" for img_name in post_data['image_names']] if post_data['image_names'] else [],
+                images=[generate_presigned_url(img_path) for img_path in post_data['images']] if post_data['images'] else [],
                 creator=CreatorInfo(
                     id=post_data['creator_id'],
                     username=post_data['username'],
                     full_name=post_data['full_name'],
-                    pfp_url=f"http://192.168.1.165:8080/api/image/{post_data['pfp_image_name']}" if post_data['pfp_image_name'] else None
+                    pfp_url=generate_presigned_url('pfp/' + post_data['pfp_image_name']) if post_data['pfp_image_name'] else None
                 )
             )
             posts.append(post)
+
+            print(post.images)
     
     return posts
     
@@ -128,11 +131,9 @@ def get_all_posts() -> List[Post]:
         with conn.cursor() as cursor:
             cursor.execute("SELECT id FROM post ORDER BY created_at DESC")
             posts_data = cursor.fetchall()
-
-        
         return get_posts_with_details([post_id['id'] for post_id in posts_data])
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return []
     
 def get_friends_feed(followees_id: List[int]) -> List[Post]:
@@ -140,7 +141,6 @@ def get_friends_feed(followees_id: List[int]) -> List[Post]:
         return []
 
     conn = get_db()
-    posts = []
 
     try:
         with conn.cursor() as cursor:
