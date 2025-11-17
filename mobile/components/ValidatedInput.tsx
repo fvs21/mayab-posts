@@ -20,12 +20,8 @@ export default function ValidatedInput({
     style, 
     ...rest
 }: ThemedTextInputProps & ValidatedInputProps) {
-    const [focused, setFocused] = useState(false);
-    
-    const handleFocus = () => setFocused(true);
-    const handleBlur = () => setFocused(false);
-
-    const showError = !valid && !focused && error;
+    const [isFocused, setIsFocused] = useState<boolean>(false);
+    const showError = !valid && !isFocused && error;
 
     return (
         <View>
@@ -35,9 +31,8 @@ export default function ValidatedInput({
                 placeholder={placeholder}
                 keyboardType={keyboardType}
                 textContentType={textContentType}
+                setFocused={setIsFocused}
                 style={[showError && styles.errorInput, style]}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
                 {...rest}
             />
             {showError && (
