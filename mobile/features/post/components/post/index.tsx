@@ -4,6 +4,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePost } from "../../api";
 import PostView from "./PostView";
+import { ScrollView, View } from "react-native";
+import Comments from "../comments";
 
 export default function PostScreen() {
   const navigation = useNavigation();
@@ -27,7 +29,14 @@ export default function PostScreen() {
     );
   }
 
-  const postData = post.post ?? post;
+  const postData = post.post;
 
-  return <PostView post={postData} onBack={() => navigation.goBack()} />;
+  return (
+    <ThemedSafeAreaView>
+      <ScrollView>
+        <PostView post={postData} onBack={() => navigation.goBack()} />
+        <Comments post_id={postData.id} />
+      </ScrollView>
+    </ThemedSafeAreaView>
+  )
 }

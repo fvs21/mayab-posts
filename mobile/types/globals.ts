@@ -20,3 +20,4 @@ export type User = {
     pfp_url: string | null;
     banner_url: string | null;
 }
+

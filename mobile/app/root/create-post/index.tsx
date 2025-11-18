@@ -10,13 +10,15 @@ import { useCreatePost } from "@/features/create-post/api";
 import { flash } from "@/features/flash/core/flash-message-creator";
 import { SelectedImage } from "@/features/create-post/types";
 
-export default function CreatePost() {
+export default function CreatePost({ route }: any) {
     const [postText, setPostText] = useState('');
     const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
     const theme = useColorScheme() ?? 'light';
     const isDark = theme === 'dark';
     const navigation = useNavigation();
     const MAX_CHARS = 280;
+
+    const reply_to = route.params?.replyTo as number | undefined;
 
     const { createPost, isPending } = useCreatePost();
 
@@ -81,7 +83,7 @@ export default function CreatePost() {
         }
 
         try {
-            await createPost({ content: postText.trim(), images: selectedImages });
+            await createPost({ content: postText.trim(), images: selectedImages, reply_to });
             navigation.goBack();
         } catch (error) {
             flash('Failed to create post. Please try again.', 3000, 'error');

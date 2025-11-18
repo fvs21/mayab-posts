@@ -14,7 +14,7 @@ export default function FeedTimeline() {
             <FlatList 
                 data={feed?.posts}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <Post post={item} />}
+                renderItem={({ item }) => <Post post={item} show_reply />}
                 refreshControl={
                     <RefreshControl
                         refreshing={isRefetching}

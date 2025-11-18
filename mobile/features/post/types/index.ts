@@ -4,11 +4,13 @@ export type Post = {
     creator: {
         id: number;
         username: string;
-        profile_picture: string;
+        pfp_url: string;
         full_name: string;
     };
     created_at: string;
     images?: string[];
-    likes_count: number;
-    comments_count: number;
+    like_count: number;
+    reply_count: number;
+    reply_to?: Post;
+    is_liked: boolean;
 }

@@ -54,9 +54,10 @@ def create_post():
 @posts_bp.route('/<post_id>', methods=['GET'])
 @jwt_required()
 def get_post(post_id):
+    user = get_current_user()
     post_id = int(post_id)
 
-    post = service.get_post_by_id(post_id)
+    post = service.get_post_by_id(post_id, user_id=user.id)
 
     if post is None:
         return jsonify({"error": True, "details": "Post not found"}), 404
@@ -66,7 +67,8 @@ def get_post(post_id):
 @posts_bp.route('/feed', methods=['GET'])
 @jwt_required()
 def get_feed():
-    posts = service.get_all_posts()
+    user = get_current_user()
+    posts = service.get_all_posts(user_id=user.id)
 
     return jsonify({"data": {"posts": [post.model_dump() for post in posts]}, "error": False}), 200
 
@@ -77,13 +79,40 @@ def get_friends_posts():
 
     followees = get_user_followees(user.id)
 
-    posts = service.get_friends_feed(followees)
+    posts = service.get_friends_feed(followees, user_id=user.id)
 
     return jsonify({"data": {"posts": [post.model_dump() for post in posts]}, "error": False}), 200
 
 @posts_bp.route('/replies/<post_id>', methods=['GET'])
 @jwt_required()
 def get_post_replies(post_id):
+    user = get_current_user()
     post_id=int(post_id)
-    replies = service.get_post_replies(post_id)
+    replies = service.get_post_replies(post_id, user_id=user.id)
     return jsonify({"data": {"replies": [reply.model_dump() for reply in replies]}, "error": False}), 200
+
+@posts_bp.route('/<post_id>/like', methods=['POST'])
+@jwt_required()
+def like_post(post_id):
+    user = get_current_user()
+    post_id = int(post_id)
+    
+    result = service.like_post(user.id, post_id)
+    
+    if result is None:
+        return jsonify({"error": True, "details": "Error liking post"}), 500
+    
+    return jsonify({"data": {"liked": result}, "error": False}), 200
+
+@posts_bp.route('/<post_id>/unlike', methods=['DELETE'])
+@jwt_required()
+def unlike_post(post_id):
+    user = get_current_user()
+    post_id = int(post_id)
+    
+    result = service.unlike_post(user.id, post_id)
+    
+    if result is None:
+        return jsonify({"error": True, "details": "Error unliking post"}), 500
+    
+    return jsonify({"data": {"unliked": result}, "error": False}), 200

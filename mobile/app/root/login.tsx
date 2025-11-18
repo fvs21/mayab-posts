@@ -40,7 +40,7 @@ export default function Login() {
                         style={styles.loginInput}
                         value={username} 
                         setValue={setUsername} 
-                        placeholder="Username or email" 
+                        placeholder="Username"
                         autoCapitalize="none"
                         keyboardType="email-address"
                     />

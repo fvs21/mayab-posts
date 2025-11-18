@@ -26,7 +26,8 @@ class Post(BaseModel):
     like_count: int
     reply_count: int
     content: str = Field(..., max_length=250, description="Content of the post, max 250 characters")
-    reply_to: Optional[int] = None    
+    reply_to: 'Optional[Post]' = None    
     created_at: datetime
     images: Optional[List[str]] = []
     creator: Optional[CreatorInfo] = None
+    is_liked: bool = False

@@ -3,8 +3,10 @@ import React from "react";
 import { Dimensions, Image, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import { MessageSquare, Heart } from 'lucide-react-native';
-import ThemedSafeAreaView from "@/components/ThemedSafeAreaView";
 import { ThemedText } from "@/components/ThemedText";
+import { useNavigation } from "@react-navigation/native";
+import { useLikePost, useUnlikePost } from '@/features/feed/api';
+import { Colors } from '@/styles/variables';
 
 type Props = {
   post: Post;
@@ -19,8 +21,21 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const createdAtText = new Date(post.created_at).toLocaleString();
+
+  const navigate = useNavigation<any>();
+  const likePost = useLikePost();
+  const unlikePost = useUnlikePost();
+
+  const handleLikeToggle = () => {
+    if (post.is_liked) {
+      unlikePost.mutate(post.id);
+    } else {
+      likePost.mutate(post.id);
+    }
+  };
+
   return (
-    <ThemedSafeAreaView>
+    <View>
       {showHeader && (
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack}>
@@ -34,10 +49,10 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         <View style={styles.row}>
           <Image
-            source={post.creator.profile_picture ? { uri: post.creator.profile_picture } : undefined}
+            source={post.creator.pfp_url ? { uri: post.creator.pfp_url } : undefined}
             style={styles.avatar}
           />
           <View style={styles.authorRow}>
@@ -75,7 +90,6 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
             );
           }
 
-          // 3 or 4 (grid), or >4 (show first 3 and overlay on 4th)
           const cellSize = (imageWidth - 8) / 2; // 8px total gap
           return (
             <View style={[styles.grid, { width: imageWidth }]}> 
@@ -119,17 +133,26 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
         </View>
 
         <View style={styles.actionsSmall}> 
-          <TouchableOpacity style={styles.actionButton} onPress={() => {}} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {
+            navigate.push('CreatePost', { replyTo: post.id });
+          }} activeOpacity={0.7}>
             <MessageSquare color="#fff" size={20} />
+            <ThemedText weight="100">{post.reply_count}</ThemedText>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={() => {}} activeOpacity={0.7}>
-            <Heart color="#fff" size={20} />
+          <TouchableOpacity style={styles.actionButton} onPress={handleLikeToggle} activeOpacity={0.7}>
+            <Heart 
+              color={post.is_liked ? Colors.danger : "#fff"} 
+              fill={post.is_liked ? Colors.danger : 'none'}
+              size={20} 
+            />
+            <ThemedText weight="100" style={post.is_liked ? { color: Colors.danger } : undefined}>
+              {post.like_count}
+            </ThemedText>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
 
-      {/* Fullscreen image modal */}
       <Modal visible={modalVisible} animationType="fade" transparent={false} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
@@ -150,7 +173,7 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
           </ScrollView>
         </View>
       </Modal>
-    </ThemedSafeAreaView>
+    </View>
   );
 }
 
@@ -252,6 +275,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 0,
     marginRight: 24,
+    flexDirection: 'row',
+    gap: 6,
   },
   actionsSmall: {
     flexDirection: 'row',

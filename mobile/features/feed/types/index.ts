@@ -11,4 +11,6 @@ export type Post = {
     images?: string[];
     likes_count: number;
     comments_count: number;
+    reply_to?: Post;
+    is_liked: boolean;
 }

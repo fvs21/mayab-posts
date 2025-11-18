@@ -8,9 +8,9 @@ export const useCreatePost = () => {
     const queryClient = useQueryClient();
 
     const { mutateAsync: create, isPending } = useMutation({
-        mutationFn: async (data: { content: string; images: SelectedImage[] }): Promise<DefaultResponse<"data", Post>> => {
+        mutationFn: async (data: { content: string; images: SelectedImage[], reply_to?: number }): Promise<DefaultResponse<"data", Post>> => {
             const formData = new FormData();
-            formData.append('data', JSON.stringify({ content: data.content }));
+            formData.append('data', JSON.stringify({ content: data.content, reply_to_post_id: data.reply_to }));
 
             data.images.forEach((image, index) => {
                 formData.append('image' + index, {
@@ -26,6 +26,10 @@ export const useCreatePost = () => {
         onSuccess: (data: DefaultResponse<"data", Post>) => {
             queryClient.setQueryData(['post', data.data.id], data.data);
             queryClient.invalidateQueries({ queryKey: ['feed'] });
+
+            if(data.data.reply_to) {
+                queryClient.invalidateQueries({ queryKey: ['post', data.data.reply_to.id, 'comments'] });
+            }
         }
     });
 
