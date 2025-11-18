@@ -2,6 +2,7 @@ import { Post } from "../../types";
 import React from "react";
 import { Dimensions, Image, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
+import { MessageSquare, Heart } from 'lucide-react-native';
 import ThemedSafeAreaView from "@/components/ThemedSafeAreaView";
 import { ThemedText } from "@/components/ThemedText";
 
@@ -117,11 +118,14 @@ export default function PostView({ post, onBack, showHeader = true }: Props) {
           <ThemedText weight="400" style={styles.dateText}>{createdAtText}</ThemedText>
         </View>
 
-        <View style={styles.actions}>
-          <ThemedText weight="400" style={styles.action}>💬 0</ThemedText>
-          <ThemedText weight="400" style={styles.action}>🔁 0</ThemedText>
-          <ThemedText weight="400" style={styles.action}>❤️ 0</ThemedText>
-          <ThemedText weight="400" style={styles.action}>🔗</ThemedText>
+        <View style={styles.actionsSmall}> 
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}} activeOpacity={0.7}>
+            <MessageSquare color="#fff" size={20} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}} activeOpacity={0.7}>
+            <Heart color="#fff" size={20} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -241,6 +245,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     paddingHorizontal: 12,
+  },
+  actionButton: {
+    padding: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 0,
+    marginRight: 24,
+  },
+  actionsSmall: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    width: '100%',
+    paddingVertical: 8,
+    paddingLeft: 0,
   },
   commentsHeader: {
     flexDirection: "row",
