@@ -2,6 +2,7 @@ import { DefaultResponse, User } from "@/types/globals";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from 'expo-secure-store';
 import { api, apiGuest } from "..";
+import { useToken } from "./store";
 
 export const useAuth = (): [string, (access_token: string | null) => void] => {
     const queryClient = useQueryClient();
@@ -35,6 +36,7 @@ export const useFetchUser = () => {
 
 export const useLogin = () => {
     const queryClient = useQueryClient();
+    const [token, setToken] = useToken();
 
     const { mutateAsync: login, isPending, isError } = useMutation({
         mutationFn: async (body: { username: string, password: string }) => {
@@ -44,7 +46,7 @@ export const useLogin = () => {
         onSuccess: async (data: DefaultResponse<"data", { access_token: string, refresh_token: string, user: User }>) => {
             await SecureStore.setItemAsync('token', data.data.access_token);
             queryClient.setQueryData(['user'], data.data.user);
-            queryClient.setQueryData(['access_token'], data.data.access_token);
+            setToken(data.data.access_token);
         }
     });
 

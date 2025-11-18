@@ -3,9 +3,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RegisterBody, RegisterResponse } from "../types";
 import { DefaultResponse, User } from "@/types/globals";
 import * as SecureStore from 'expo-secure-store';
+import { useToken } from "@/api/auth/store";
 
 export const useRegister = () => {
     const queryClient = useQueryClient();
+    const [, setToken] = useToken();
 
     const { mutateAsync: register, isPending, isError } = useMutation({
         mutationFn: async (body: RegisterBody): Promise<DefaultResponse<"data", RegisterResponse>> => {
@@ -14,7 +16,7 @@ export const useRegister = () => {
         },
         onSuccess: async (data: DefaultResponse<"data", RegisterResponse>) => {
             await SecureStore.setItemAsync('token', data.data.access_token);
-            queryClient.setQueryData(['access_token'], data.data.access_token);
+            setToken(data.data.access_token);
             queryClient.setQueryData(['user'], data.data.user);
         }
     });

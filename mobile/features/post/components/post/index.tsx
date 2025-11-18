@@ -10,7 +10,6 @@ export default function PostScreen() {
   const route = useRoute();
   const { id } = route.params as { id: number };
   const { post, isLoading } = usePost(id);
-  console.log(post)
 
   if (isLoading) {
     return (

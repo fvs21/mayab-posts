@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
-const BASE_URL = "http://192.168.1.165:8080/api";
+const BASE_URL = "http://192.168.100.25:8080/api";
 
 export const apiGuest: AxiosInstance = axios.create({
     baseURL: BASE_URL,

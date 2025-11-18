@@ -2,10 +2,11 @@ import * as SecureStore from 'expo-secure-store';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { View } from 'react-native';
 import { api, apiMultiPart } from '..';
+import { useToken } from './store';
 
 export default function AuthenticationProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [token, setToken] = useState<string | null>(null);
+    const [token, setToken] = useToken();
 
     useEffect(() => {
         let interceptor: number;
