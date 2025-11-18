@@ -1,10 +1,5 @@
-import ThemedSafeAreaView from "@/components/ThemedSafeAreaView";
-import { View } from "react-native";
+import PostScreen from '@/features/post/components/post';
 
 export default function Post() {
-    return (
-        <ThemedSafeAreaView>
-
-        </ThemedSafeAreaView>
-    )
+    return <PostScreen />;
 }
