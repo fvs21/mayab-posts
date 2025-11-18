@@ -1,20 +1,25 @@
 import { ThemedText } from '@/components/ThemedText';
 import ThemedView from '@/components/themed-view';
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { Post as PostType } from '../../types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
+import { MessageCircle, Repeat2, Heart, Share } from 'lucide-react-native';
+import { Colors } from '@/styles/variables';
 
 export default function Post({ post }: { post: PostType }) {
     const time = new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const navigation = useNavigation<any>();
     const queryClient = useQueryClient();
+    const theme = useColorScheme() ?? 'light';
+    const isDark = theme === 'dark';
+    const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
 
     return (
         <ThemedView style={styles.container}>
             <TouchableOpacity 
-                activeOpacity={0.85} style={styles.row}
+                activeOpacity={0.50} style={styles.row}
                 onPress={() => {
                     queryClient.setQueryData(['post', post.id], { post });
                     navigation.push('Post', { id: post.id });
@@ -44,10 +49,14 @@ export default function Post({ post }: { post: PostType }) {
                     ) : null}
 
                     <View style={styles.actions}>
-                        <ThemedText weight="100" style={styles.action}>💬 0</ThemedText>
-                        <ThemedText weight="100" style={styles.action}>🔁 0</ThemedText>
-                        <ThemedText weight="100" style={styles.action}>❤️ 0</ThemedText>
-                        <ThemedText weight="100" style={styles.action}>🔗</ThemedText>
+                        <View style={styles.actionItem}>
+                            <MessageCircle size={18} color={iconColor} />
+                            <ThemedText weight="100" style={styles.actionText}>0</ThemedText>
+                        </View>
+                        <View style={styles.actionItem}>
+                            <Heart size={18} color={iconColor} />
+                            <ThemedText weight="100" style={styles.actionText}>0</ThemedText>
+                        </View>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -60,7 +69,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#4f4f4fff',
+        borderBottomColor: '#1b1b1bff',
     },
     row: {
         flexDirection: 'row',
@@ -99,10 +108,15 @@ const styles = StyleSheet.create({
     actions: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        gap: 18,
+        gap: 24,
     },
-    action: {
-        marginRight: 18,
+    actionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    actionText: {
         fontSize: 14,
+        color: '#8C8E98',
     },
 });

@@ -12,8 +12,8 @@ export const useCreatePost = () => {
             const formData = new FormData();
             formData.append('data', JSON.stringify({ content: data.content }));
 
-            data.images.forEach((image) => {
-                formData.append('images', {
+            data.images.forEach((image, index) => {
+                formData.append('image' + index, {
                     uri: image.uri,
                     name: image.filename,
                     type: image.type

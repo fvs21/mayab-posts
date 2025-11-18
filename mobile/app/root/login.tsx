@@ -7,7 +7,7 @@ import { flash } from "@/features/flash/core/flash-message-creator";
 import { Colors } from "@/styles/variables";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 
 export default function Login() {
     const isDark = useColorScheme() === "dark";
@@ -51,13 +51,13 @@ export default function Login() {
                         placeholder="Password" 
                     />
                     <TouchableOpacity style={styles.logInButton} onPress={handleLogin} disabled={loginDisabled}>
-                        <Text style={styles.logInText}>
-                            {isPending ? (
-                                "Loading..."
-                            ) : (
-                                "Log In"
-                            )}
-                        </Text>
+                        {isPending ? (
+                            <ActivityIndicator />
+                        ) : (
+                            <Text style={styles.logInText}>
+                                Log in
+                            </Text>
+                        )}
                     </TouchableOpacity>
                     <TouchableOpacity style={{alignItems: "center"}}> 
                         <ThemedText weight="300" type="default">Forgot your password?</ThemedText>

@@ -85,8 +85,6 @@ def retrieve_image(image_name: str) -> Optional[Image]:
 def generate_presigned_url(key: str, expiration: int = 3600) -> str:
     s3 = get_s3_client()
 
-    print(key)
-
     try:
         res = s3.generate_presigned_url(
             'get_object', 

@@ -11,13 +11,14 @@ from ..user.service import get_user_followees
 
 posts_bp = Blueprint("post", __name__, url_prefix="/api/post")
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-#endpoint para crear un post
 @posts_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_post():

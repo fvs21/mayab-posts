@@ -1,5 +1,5 @@
 import ThemedView from "@/components/themed-view";
-import { Text, View, TextInput, TouchableOpacity, StyleSheet, useColorScheme, ScrollView, Image, Alert, Platform, InputAccessoryView } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, StyleSheet, useColorScheme, ScrollView, Image, Alert, Platform, InputAccessoryView, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { Colors } from "@/styles/variables";
 import { useNavigation } from "expo-router";
@@ -79,7 +79,7 @@ export default function CreatePost() {
             Alert.alert('Empty Post', 'Please add some text or images');
             return;
         }
-        
+
         try {
             await createPost({ content: postText.trim(), images: selectedImages });
             navigation.goBack();
@@ -88,7 +88,7 @@ export default function CreatePost() {
         }
     };
 
-    const canPost = (postText.trim().length > 0 || selectedImages.length > 0) && postText.length <= MAX_CHARS;
+    const canPost = (postText.trim().length > 0 || selectedImages.length > 0) && postText.length <= MAX_CHARS && !isPending;
     const remainingChars = MAX_CHARS - postText.length;
     const isOverLimit = remainingChars < 0;
 
@@ -97,26 +97,30 @@ export default function CreatePost() {
     return (
         <ThemedView className={{ flex: 1 }}>
             <View style={[styles.header, isDark ? styles.headerDark : styles.headerLight]}>
-                <TouchableOpacity 
-                    onPress={() => navigation.goBack()} 
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
                     style={styles.closeButton}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                     <XLgSVG width={22} color={isDark ? 'white' : 'black'} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={handlePost}
                     disabled={!canPost}
                     style={[styles.postButton, !canPost && styles.postButtonDisabled]}
                 >
-                    <Text style={[styles.postButtonText, !canPost && styles.postButtonTextDisabled]}>
-                        Post
-                    </Text>
+                    {isPending ? (
+                        <ActivityIndicator />
+                    ) : (
+                        <Text style={[styles.postButtonText, !canPost && styles.postButtonTextDisabled]}>
+                            Post
+                        </Text>
+                    )}
                 </TouchableOpacity>
             </View>
 
-            <ScrollView 
-                style={styles.content} 
+            <ScrollView
+                style={styles.content}
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -157,7 +161,7 @@ export default function CreatePost() {
                                 selectedImages.length >= 3 && styles.imageContainerMultiple
                             ]}>
                                 <Image source={{ uri: uri.uri }} style={styles.image} />
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.removeImageButton}
                                     onPress={() => removeImage(index)}
                                 >
@@ -173,15 +177,15 @@ export default function CreatePost() {
             {Platform.OS === 'ios' ? (
                 <InputAccessoryView nativeID={inputAccessoryViewID}>
                     <View style={[styles.bottomToolbar, isDark ? styles.bottomToolbarDark : styles.bottomToolbarLight]}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.mediaButton}
                             onPress={takePhoto}
                             disabled={selectedImages.length >= 4}
                         >
                             <Camera size={22} color={isDark ? Colors.dark.icon : Colors.light.icon} />
                         </TouchableOpacity>
-                        
-                        <TouchableOpacity 
+
+                        <TouchableOpacity
                             style={styles.mediaButton}
                             onPress={pickImageFromGallery}
                             disabled={selectedImages.length >= 4}
@@ -192,15 +196,15 @@ export default function CreatePost() {
                 </InputAccessoryView>
             ) : (
                 <View style={[styles.bottomToolbar, isDark ? styles.bottomToolbarDark : styles.bottomToolbarLight]}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.mediaButton}
                         onPress={takePhoto}
                         disabled={selectedImages.length >= 4}
                     >
                         <Camera size={22} color={isDark ? Colors.dark.icon : Colors.light.icon} />
                     </TouchableOpacity>
-                    
-                    <TouchableOpacity 
+
+                    <TouchableOpacity
                         style={styles.mediaButton}
                         onPress={pickImageFromGallery}
                         disabled={selectedImages.length >= 4}

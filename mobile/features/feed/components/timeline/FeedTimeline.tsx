@@ -1,9 +1,9 @@
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { useFeed } from "../../api";
 import Post from "../post";
 
 export default function FeedTimeline() {
-    const { feed, isLoading } = useFeed();
+    const { feed, isLoading, refetch, isRefetching } = useFeed();
 
     if (isLoading) {
         return <View />;
@@ -15,6 +15,12 @@ export default function FeedTimeline() {
                 data={feed?.posts}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => <Post post={item} />}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefetching}
+                        onRefresh={refetch}
+                    />
+                }
             />
         </View>
     )

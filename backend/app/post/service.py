@@ -54,11 +54,11 @@ def get_post_by_id(post_id: int) -> Optional[Post]:
                 JOIN post_image pi ON i.id = pi.image_id
                 WHERE pi.post_id = %s
             """, (post.id,))
-            images_data = cursor.fetchall()
+            images_data = cursor.fetchall() 
 
             post.images = [generate_presigned_url(img['image_path']) for img in images_data]
 
-            cursor.execute("SELECT id, username, pfp_id, full_name FROM app_user WHERE id = %s", (post.creator_id,))
+            cursor.execute("SELECT id, username, pfp_id, full_name FROM app_user WHERE id = %s", (post_data['creator_id']))
 
             user_data = cursor.fetchone()
 
@@ -120,8 +120,6 @@ def get_posts_with_details(post_ids: List[int]) -> List[Post]:
             )
             posts.append(post)
 
-            print(post.images)
-    
     return posts
     
 def get_all_posts() -> List[Post]:

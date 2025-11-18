@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Post } from "../types";
 
 export const useFeed = () => {
-    const { data: feed, isLoading } = useQuery({
+    const { data: feed, isLoading, refetch, isRefetching } = useQuery({
         queryKey: ["feed"],
         queryFn: async (): Promise<DefaultResponse<"posts", Post[]>> => {
             const req = await api.get("/post/feed");
@@ -15,7 +15,9 @@ export const useFeed = () => {
 
     return {
         feed,
-        isLoading
+        isLoading,
+        refetch,
+        isRefetching
     }
 }
 
