@@ -19,6 +19,27 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_STORAGE_BUCKET = os.getenv("AWS_STORAGE_BUCKET_NAME")
 
+class S3Client:
+    (Singleton):
+    """Singleton S3 client instance"""
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(S3Client, cls).__new__(cls)
+            cls._instance.client = boto3.client(
+                's3',
+                aws_access_key_id=AWS_ACCESS_KEY,
+                aws_secret_access_key=AWS_SECRET_KEY,
+                region_name=AWS_REGION_NAME,
+                endpoint_url="https://s3.us-east-2.amazonaws.com",
+                config=Config(signature_version='s3v4')
+            )
+        return cls._instance
+
+    def get_client(self):
+        return self.client
+
 def get_s3_client():
     s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY, region_name=AWS_REGION_NAME, endpoint_url="https://s3.us-east-2.amazonaws.com", config=Config(signature_version='s3v4'))
     return s3
